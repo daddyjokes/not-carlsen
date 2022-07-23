@@ -38,38 +38,34 @@ void iterative_deepening(void) {
 
     uint64_t nodes = 0;
     Move pv[info.depth]; // last index reserved to denote search wasn't complete
-    Move best_move;
+    // Move best_move;
 
     int weight = (board.turn == WHITE) ? 1 : -1;
     
     // Dynamic scheduling assigns one iteration to each thread. On completion grab another thread
-    // Private variables with original values copied: rtable
-    // Private variables with uninitialized values: pv
-    // Shared variables: board, ttable, info, start, nodes
-    // omp_set_num_threads(2);
-    // #pragma omp parallel for schedule(dynamic) firstprivate(rtable) private(pv) shared(start, nodes)
-    for (int d = 1; d <= info.depth; d++) {
-    // for (int d = 1; d <= 2; d++) {
+    // Thread local variables with original values copied: board, rtable
+    // Thread local variables with uninitialized values: pv
+    // Shared variables: ttable, info, start, nodes
+    #pragma omp parallel for schedule(dynamic) firstprivate(board, rtable) private(pv) shared(start, nodes)
+    for (int d = 1; d <= 2; d++) {
         // if (pv[info.depth - 1].flag == PASS) continue; // On early exit, index info.depth - 1 is set to NULL_MOVE
 
         int score = _pvs(d, -MATE_SCORE, MATE_SCORE, true, board.turn, start, &nodes, pv);
 
         // if (pv[info.depth - 1].flag == PASS) continue;
-        if (pv[info.depth - 1].flag == PASS) break;
-        best_move = pv[d - 1];
+        // best_move = pv[d - 1];
 
-        clock_t elapsed = clock() - start;
-        double time = (double) elapsed / CLOCKS_PER_SEC;
-        if (time == 0) time = .1;
+        // clock_t elapsed = clock() - start;
+        // double time = (double) elapsed / CLOCKS_PER_SEC;
+        // if (time == 0) time = .1;
         
-        print_info(d, score * weight, nodes, time, pv);
-        printf("\n");
+        // print_info(d, score * weight, nodes, time, pv);
+        // printf("\n");
     }
 
-    // printf("Done\n");
-    printf("bestmove ");
-    print_move(best_move);
-    printf("\n");
+    // printf("bestmove ");
+    // print_move(best_move);
+    // printf("\n");
 }
 
 
